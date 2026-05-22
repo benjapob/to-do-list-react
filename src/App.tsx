@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Column from './components/Column';
 import type { Task, ColumnId, ColumnDef } from './types';
 import './App.css';
@@ -17,9 +17,24 @@ const INITIAL_TASKS: Task[] = [
   { id: '4', title: 'Setup inicial del proyecto', description: '', columnId: 'done', createdAt: Date.now() },
 ];
 
+const STORAGE_KEY = 'kanban-tasks';
+
+function loadTasks(): Task[] {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : INITIAL_TASKS;
+  } catch {
+    return INITIAL_TASKS;
+  }
+}
+
 export default function App() {
-  const [tasks, setTasks] = useState<Task[]>(INITIAL_TASKS);
+  const [tasks, setTasks] = useState<Task[]>(loadTasks);
   const draggedIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+  }, [tasks]);
 
   const handleDragStart = (taskId: string) => {
     draggedIdRef.current = taskId;
